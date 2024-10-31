@@ -22,7 +22,7 @@ public class Cliente extends Receiver {
     private PrivateKey chavePrivadaPropria;
     private PublicKey chavePublicaTesouraria;
     private PublicKey chavePublicaMotoboy;
-    private static final String ROUTINGKEY = "pedido_criado."; // Tópicos para enviar mensagem
+    private static final String ROUTINGKEY = "pedido_criado.#"; // Tópicos para enviar mensagem
     private static final List<String> BINDING_KEYS = Arrays.asList("#.boleto_criado.#", "#.pedido_entregue"); // Tópicos
                                                                                                               // para
                                                                                                               // receber
@@ -70,11 +70,11 @@ public class Cliente extends Receiver {
     public void sendOrder(String pedido, String routingKey) {
         // Enviar ordem para a tesouraria
         try {
+            System.out.println("\n#################################\n");
             Message message = new Message(pedido, chavePrivadaPropria);
             sender.send(message.getPayload(), routingKey);
-            System.out.println(" Enviado para o tópico '" + routingKey + "' a mensagem: '" + message.getTexto() + "'");
             System.out.println("Pedido enviado com sucesso!");
-
+            System.out.println("\n#################################\n");
         } catch (Exception e) {
             System.err.println("Erro ao enviar pedido: " + e.getMessage());
         }
@@ -86,7 +86,6 @@ public class Cliente extends Receiver {
             Message message = new Message(pedido, chavePrivadaPropria);
             sender.send(message.getPayload(), routingKey);
             System.out.println("Pagamento enviado com sucesso!");
-
         } catch (Exception e) {
             System.err.println("Erro ao enviar pedido: " + e.getMessage());
         }
@@ -107,10 +106,13 @@ public class Cliente extends Receiver {
     private void processDelivered(byte[] payload) {
         Message message = null;
         try {
+            System.out.println("\n#################################\n");
             message = new Message(payload, chavePublicaMotoboy);
             System.out.println("Pedido entregue: " + message.getTexto());
+            System.out.println("\n#################################\n");
             System.out.println("Digite o pedido: ");
             String pedido = scanner.nextLine();
+
             sendOrder(pedido, ROUTINGKEY);
         } catch (RuntimeException e) {
             System.err.println("Erro de Assinatura na mensagem: " + e.getMessage());
@@ -122,20 +124,18 @@ public class Cliente extends Receiver {
     private void processBilling(byte[] payload) {
         Message message = null;
         try {
+            System.out.println("\n#################################\n");
             message = new Message(payload, chavePublicaTesouraria);
             System.out.println("\nBoleto recebido: " + message.getTexto());
             System.out.println("Processando pagamento...\n");
-            doWork(5000);
+            doWork(1000);
             sendDelivered(message.getTexto(), "#.pagamento_efetivado.#");
+            System.out.println("\n#################################\n");
         } catch (RuntimeException e) {
             System.err.println("Erro de Assinatura na mensagem: " + e.getMessage());
         } catch (Exception e) {
             System.err.println("Erro na assinatura: " + e.getMessage());
         }
-    }
-
-    public void doWork(int time) throws InterruptedException {
-        Thread.sleep(time); // Simulando trabalho
     }
 
     public static void main(String[] args) {

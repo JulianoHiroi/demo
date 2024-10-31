@@ -7,7 +7,7 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.Arrays;
 import java.util.List;
-
+import java.util.Scanner;
 import system.mensagem.Message;
 import system.receiver.Receiver;
 import system.restaurante.Restaurante;
@@ -18,6 +18,7 @@ public class Motoboy extends Receiver {
     private PublicKey chavePublicaRestaurante;
     private PrivateKey chavePrivadaPropria;
     private Sender sender;
+    private static final Scanner scanner = new Scanner(System.in);
 
     private static final String ROUTINGKEY = "#.pedido_entregue";
     private static final List<String> BINDING_KEYS = Arrays.asList("#.pedido_despachado.#");
@@ -52,23 +53,19 @@ public class Motoboy extends Receiver {
     public void processMessage(byte[] payload, String routingKey) {
         Message message = null;
         try {
+            System.out.println("\n#################################\n");
             message = new Message(payload, chavePublicaRestaurante);
             System.out.println("\nPedido despachado recebido: " + message.getTexto() + "\n");
             System.out.println("Enviando pedido...");
-            doWork();
+            doWork(1000);
 
             sendConfirmation(message.getTexto(), ROUTINGKEY);
-        } catch (InterruptedException e) {
-            System.err.println("Erro ao processar pedido: " + e.getMessage());
+            System.out.println("\n#################################\n");
         } catch (RuntimeException e) {
             System.err.println("Erro de Assinatura na mensagem: " + e.getMessage());
         } catch (Exception e) {
             System.err.println("Erro na assinatura: " + e.getMessage());
         }
-    }
-
-    public void doWork() throws InterruptedException {
-        Thread.sleep(3000); // Simulando trabalho
     }
 
     private void sendConfirmation(String message, String routingKey) {

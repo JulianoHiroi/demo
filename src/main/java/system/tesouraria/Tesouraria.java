@@ -3,7 +3,7 @@ package system.tesouraria;
 import system.mensagem.Message;
 import system.receiver.Receiver;
 import system.sender.Sender;
-
+import java.util.Scanner;
 import java.io.File;
 import java.io.FileInputStream;
 import java.security.PrivateKey;
@@ -20,6 +20,7 @@ public class Tesouraria extends Receiver {
 
     private static final String ROUTINGKEY = "#.boleto_criado.#"; // Alterado para os tópicos para enviar mensagem
     private static final List<String> BINDING_KEYS = Arrays.asList("pedido_criado.#");
+    private static final Scanner scanner = new Scanner(System.in);
 
     public Tesouraria() {
         super(BINDING_KEYS);
@@ -52,23 +53,18 @@ public class Tesouraria extends Receiver {
     public void processMessage(byte[] payload, String routingKey) {
         Message message = null;
         try {
+            System.out.println("\n#################################\n");
             message = new Message(payload, chavePublicaCliente);
             System.out.println("\nPedido recebido: " + message.getTexto() + "\n");
             System.out.println("Processando pedido...");
-            doWork();
-
+            doWork(1000);
             sendBilling(message.getTexto(), ROUTINGKEY);
-        } catch (InterruptedException e) {
-            System.err.println("Erro ao processar pedido: " + e.getMessage());
+            System.out.println("\n#################################\n");
         } catch (RuntimeException e) {
             System.err.println("Erro de Assinatura na mensagem: " + e.getMessage());
         } catch (Exception e) {
             System.err.println("Erro na assinatura: " + e.getMessage());
         }
-    }
-
-    public void doWork() throws InterruptedException {
-        Thread.sleep(1000); // Simulando trabalho
     }
 
     // Método para enviar o boleto

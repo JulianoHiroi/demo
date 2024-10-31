@@ -41,7 +41,7 @@ public class Message {
         if (!verify(texto, assinatura, chavePublica)) {
             throw new RuntimeException("Assinatura inválida");
         } else {
-            System.out.println("Assinatura válida");
+            System.out.println("Mensagem com assinatura válida");
         }
     }
 

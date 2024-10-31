@@ -5,11 +5,12 @@ import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.DeliverCallback;
-
+import java.util.Scanner;
 import java.util.*;
 
 public abstract class Receiver {
 
+    private static final Scanner scanner = new Scanner(System.in);
     private static final String EXCHANGE_NAME = "system";
     private ConnectionFactory factory;
     private List<String> bindingKeys;
@@ -28,6 +29,16 @@ public abstract class Receiver {
         }
     }
 
+    public void doWork(int time) {
+
+        try {
+            Thread.sleep(5000);
+
+        } catch (InterruptedException _ignored) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
     public void init() {
         try {
             channel.exchangeDeclare(EXCHANGE_NAME, BuiltinExchangeType.TOPIC);
@@ -39,10 +50,13 @@ public abstract class Receiver {
             }
             System.out.println("Esperando mensagens...\n");
             DeliverCallback deliverCallback = (consumerTag, delivery) -> {
+
                 byte[] message = delivery.getBody();
                 // Informa de que canal a mensagem foi recebida
                 System.out.println("Mensagem recebida do canal: " + delivery.getEnvelope().getRoutingKey());
-                processMessage(message, delivery.getEnvelope().getRoutingKey());
+                // Faça uma nova thread que executa o método processMessage
+                new Thread(() -> processMessage(message, delivery.getEnvelope().getRoutingKey())).start();
+                System.out.println("Esperando mensagens...\n");
             };
             channel.basicConsume(queueName, true, deliverCallback, consumerTag -> {
             });

@@ -7,7 +7,7 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.Arrays;
 import java.util.List;
-
+import java.util.Scanner;
 import system.mensagem.Message;
 import system.receiver.Receiver;
 import system.tesouraria.Tesouraria;
@@ -21,6 +21,7 @@ public class Restaurante extends Receiver {
     private static final List<String> BINDING_KEYS = Arrays.asList("#.pagamento_efetivado.#");
     private static final String ROUTINGKEY = "#.pedido_despachado";
     private Sender sender;
+    private static final Scanner scanner = new Scanner(System.in);
 
     public Restaurante() {
         super(BINDING_KEYS);
@@ -52,13 +53,13 @@ public class Restaurante extends Receiver {
     public void processMessage(byte[] payload, String routingKey) {
         Message message = null;
         try {
+            System.out.println("\n#################################\n");
             message = new Message(payload, chavePublicaCliente);
             System.out.println("\nPagamento Efetivado recebido: " + message.getTexto() + "\n");
             System.out.println("Processando prato...");
-            doWork();
+            doWork(1000);
             sendDish(message.getTexto(), ROUTINGKEY);
-        } catch (InterruptedException e) {
-            System.err.println("Erro ao processar pedido: " + e.getMessage());
+            System.out.println("\n#################################\n");
         } catch (RuntimeException e) {
             System.err.println("Erro de Assinatura na mensagem: " + e.getMessage());
         } catch (Exception e) {
@@ -75,10 +76,6 @@ public class Restaurante extends Receiver {
         } catch (Exception e) {
             System.err.println("Erro ao enviar prato: " + e.getMessage());
         }
-    }
-
-    public void doWork() throws InterruptedException {
-        Thread.sleep(3000); // Simulando trabalho
     }
 
     public static void main(String[] args) {
