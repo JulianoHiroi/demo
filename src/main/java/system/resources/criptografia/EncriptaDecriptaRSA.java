@@ -1,4 +1,4 @@
-package system.criptografia;
+package system.resources.criptografia;
 
 import java.io.File;
 import java.io.FileInputStream;

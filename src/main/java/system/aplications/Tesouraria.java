@@ -1,8 +1,9 @@
-package system.tesouraria;
+package system.aplications;
 
-import system.mensagem.Message;
-import system.receiver.Receiver;
-import system.sender.Sender;
+import system.resources.Message;
+import system.resources.Receiver;
+import system.resources.Sender;
+
 import java.util.Scanner;
 import java.io.File;
 import java.io.FileInputStream;
@@ -51,9 +52,11 @@ public class Tesouraria extends Receiver {
 
     @Override
     public void processMessage(byte[] payload, String routingKey) {
+
         Message message = null;
         try {
             System.out.println("\n#################################\n");
+            System.out.println("Mensagem recebida do canal: " + routingKey);
             message = new Message(payload, chavePublicaCliente);
             System.out.println("\nPedido recebido: " + message.getTexto() + "\n");
             System.out.println("Processando pedido...");

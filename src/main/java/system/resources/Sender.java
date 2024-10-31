@@ -1,4 +1,4 @@
-package system.sender;
+package system.resources;
 
 import com.rabbitmq.client.BuiltinExchangeType;
 import com.rabbitmq.client.Channel;

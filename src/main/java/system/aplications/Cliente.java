@@ -1,12 +1,12 @@
-package system.cliente;
+package system.aplications;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 
-import system.mensagem.Message;
-import system.receiver.Receiver;
-import system.sender.Sender;
+import system.resources.Message;
+import system.resources.Receiver;
+import system.resources.Sender;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -70,11 +70,11 @@ public class Cliente extends Receiver {
     public void sendOrder(String pedido, String routingKey) {
         // Enviar ordem para a tesouraria
         try {
-            System.out.println("\n#################################\n");
+
             Message message = new Message(pedido, chavePrivadaPropria);
             sender.send(message.getPayload(), routingKey);
             System.out.println("Pedido enviado com sucesso!");
-            System.out.println("\n#################################\n");
+
         } catch (Exception e) {
             System.err.println("Erro ao enviar pedido: " + e.getMessage());
         }
@@ -93,10 +93,17 @@ public class Cliente extends Receiver {
 
     @Override
     public void processMessage(byte[] payload, String routingKey) {
+        System.out.println("Mensagem recebida do canal: " + routingKey);
         if (routingKey.equals("#.boleto_criado.#")) {
+            System.out.println("\n#################################\n");
+            System.out.println("Mensagem recebida do canal: " + routingKey);
             processBilling(payload);
+            System.out.println("\n#################################\n");
         } else if (routingKey.equals("#.pedido_entregue")) {
+            System.out.println("\n#################################\n");
+            System.out.println("Mensagem recebida do canal: " + routingKey);
             processDelivered(payload);
+            System.out.println("\n#################################\n");
 
         } else {
             System.out.println("Erro! Topico nao reconhecido: " + routingKey);
@@ -105,15 +112,12 @@ public class Cliente extends Receiver {
 
     private void processDelivered(byte[] payload) {
         Message message = null;
+
         try {
-            System.out.println("\n#################################\n");
+
             message = new Message(payload, chavePublicaMotoboy);
             System.out.println("Pedido entregue: " + message.getTexto());
-            System.out.println("\n#################################\n");
-            System.out.println("Digite o pedido: ");
-            String pedido = scanner.nextLine();
 
-            sendOrder(pedido, ROUTINGKEY);
         } catch (RuntimeException e) {
             System.err.println("Erro de Assinatura na mensagem: " + e.getMessage());
         } catch (Exception e) {
@@ -124,13 +128,13 @@ public class Cliente extends Receiver {
     private void processBilling(byte[] payload) {
         Message message = null;
         try {
-            System.out.println("\n#################################\n");
+
             message = new Message(payload, chavePublicaTesouraria);
             System.out.println("\nBoleto recebido: " + message.getTexto());
             System.out.println("Processando pagamento...\n");
             doWork(1000);
             sendDelivered(message.getTexto(), "#.pagamento_efetivado.#");
-            System.out.println("\n#################################\n");
+
         } catch (RuntimeException e) {
             System.err.println("Erro de Assinatura na mensagem: " + e.getMessage());
         } catch (Exception e) {
@@ -138,13 +142,26 @@ public class Cliente extends Receiver {
         }
     }
 
+    public void requestOrders() {
+        while (true) {
+            System.out.println("[main] pode digitar novo pedido!");
+            String pedido = scanner.next();
+            if (pedido.equals(" "))
+                break;
+            sendOrder(pedido, ROUTINGKEY);
+        }
+
+    }
+
     public static void main(String[] args) {
         Cliente cliente = new Cliente("Juliano");
-        System.out.println("Digite o pedido: ");
-        String pedido = scanner.nextLine();
-        cliente.sendOrder(pedido, ROUTINGKEY);
-        cliente.init();
-
+        new Thread(() -> {
+            cliente.init();
+        }).start();
+        cliente.doWork(5);
+        new Thread(() -> {
+            cliente.requestOrders();
+        }).start();
     }
 
 }

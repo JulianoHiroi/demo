@@ -1,4 +1,4 @@
-package system.receiver;
+package system.resources;
 
 import com.rabbitmq.client.BuiltinExchangeType;
 import com.rabbitmq.client.Channel;
@@ -48,16 +48,16 @@ public abstract class Receiver {
                 channel.queueBind(queueName, EXCHANGE_NAME, bindingKey);
                 System.out.println("Fila criada e vinculada ao tópico: " + bindingKey);
             }
-            System.out.println("Esperando mensagens...\n");
             DeliverCallback deliverCallback = (consumerTag, delivery) -> {
 
                 byte[] message = delivery.getBody();
                 // Informa de que canal a mensagem foi recebida
-                System.out.println("Mensagem recebida do canal: " + delivery.getEnvelope().getRoutingKey());
+
                 // Faça uma nova thread que executa o método processMessage
                 new Thread(() -> processMessage(message, delivery.getEnvelope().getRoutingKey())).start();
-                System.out.println("Esperando mensagens...\n");
+
             };
+            System.out.println("Esperando mensagens...");
             channel.basicConsume(queueName, true, deliverCallback, consumerTag -> {
             });
         } catch (Exception e) {
